@@ -1,0 +1,22 @@
+{
+  "name": "interactions-bot",
+  "description": "A Discord bot base framework that supports interactions.",
+  "license": "MIT",
+  "module": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "start": "bun run src/index.ts"
+  },
+  "devDependencies": {
+    "bun-types": "latest",
+    "discord-api-types": "^0.37.51",
+    "prettier": "^3.0.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "hono": "^3.3.4",
+    "tweetnacl": "^1.0.3"
+  }
+}
