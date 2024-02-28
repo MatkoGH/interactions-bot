@@ -10,6 +10,7 @@ import {
     APIMessageSelectMenuInteractionData,
     APIModalSubmission,
     APIUserInteractionDataResolved,
+    ApplicationCommandOptionType,
     ApplicationCommandType,
     ComponentType,
     ModalSubmitActionRowComponent,
@@ -99,6 +100,25 @@ export class ChatInputCommandInteractionData extends CommandInteractionData {
         super(raw)
         this.guildId = raw.guild_id
         this.options = raw.options
+    }
+
+    // * Computed
+
+    /** 
+     * The subcommand path.
+     *  - `[group]/[subcommand]` (group and subcommand are present)
+     *  - `[subcommand]` (only subcommand is present)
+     *  - `undefined` (otherwise)
+     */
+    public get subcommandPath(): string | undefined {
+        const group = this.options?.find(opt => opt.type === ApplicationCommandOptionType.SubcommandGroup)
+        const subcommand = this.options?.find(opt => opt.type === ApplicationCommandOptionType.Subcommand)
+
+        // Return undefined if no subcommand is present
+        if (!subcommand) return undefined
+
+        // Return the subcommand path
+        return `${group ? group?.name + "/" : ""}${subcommand.name}`
     }
 }
 

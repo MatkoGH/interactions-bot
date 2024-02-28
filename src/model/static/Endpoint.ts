@@ -14,7 +14,7 @@ export class Endpoint {
 
     /** The base URL pointing to Discord's API. */
     public get baseURL() {
-        return new URL(`https://discord.com/api/${this.version}/`)
+        return new URL(`https://discord.com/api/${this.version}/`) as URL
     }
 
     /** The full URL of the endpoint. */
@@ -23,7 +23,7 @@ export class Endpoint {
             ? this.currentPath.slice(1) 
             : this.currentPath
 
-        return new URL(path, this.baseURL)
+        return new URL(path, this.baseURL) as URL
     }
 
     // * Initializer

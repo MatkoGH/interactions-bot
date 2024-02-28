@@ -68,6 +68,9 @@ export default class Interaction {
     /** Read-only property; always `1`. */
     private readonly version: number
 
+    /** The environment variables. */
+    protected readonly env: any
+
     // * Computed
 
     /** The user that invoked the interaction. */
@@ -81,7 +84,7 @@ export default class Interaction {
      * Create a new interaction instance.
      * @param raw The raw interaction provided by the API.
      */
-    public constructor(raw: APIInteraction) {
+    public constructor(raw: APIInteraction, env: any) {
         this.id = raw.id
         this.token = raw.token
         this.type = raw.type
@@ -96,27 +99,29 @@ export default class Interaction {
         this.user = raw.user
 
         this.version = raw.version
+
+        this.env = env
     }
 
     /**
      * Create a new interaction instance and immediately convert it to its respective type
      * @param raw The raw interaction provided by the API.
      */
-    public static init(raw: APIInteraction): Interaction {
+    public static init(raw: APIInteraction, env: any): Interaction {
         switch (raw.type) {
             case InteractionType.ApplicationCommandAutocomplete:
-                return new AutocompleteInteraction(raw)
+                return new AutocompleteInteraction(raw, env)
             case InteractionType.ApplicationCommand:
-                return new CommandInteraction(raw)
+                return new CommandInteraction(raw, env)
             case InteractionType.MessageComponent:
-                return new ComponentInteraction(raw)
+                return new ComponentInteraction(raw, env)
             case InteractionType.ModalSubmit:
-                return new ModalSubmissionInteraction(raw)
+                return new ModalSubmissionInteraction(raw, env)
             case InteractionType.Ping:
-                return new PingInteraction(raw)
+                return new PingInteraction(raw, env)
             default:
                 console.error("Invalid interaction type.")
-                return new Interaction(raw)
+                return new Interaction(raw, env)
         }
     }
 
@@ -157,15 +162,14 @@ export default class Interaction {
     protected async sendTo(endpointUrl: URL, responseData: APIInteractionResponse) {
         const response = await fetch(endpointUrl, {
             method: "POST",
-            headers: Client.shared.requestHeaders,
+            headers: Client.shared.requestHeaders(this.env.APPLICATION_SECRET),
             body: JSON.stringify(responseData),
         })
 
         // Log any errors
         if (response.status !== StatusCode.NoContent) {
-            Logger.shared.error({
+            Logger.shared.error("Failed to respond to interaction.", {
                 code: response.status,
-                content: "Failed to respond to interaction.",
             })
         }
     }
@@ -220,11 +224,17 @@ export abstract class RespondableInteraction extends Interaction {
      * @param data The data to respond to the interaction with.
      * @param ephemeral Whether the response should be ephemeral. Defaults to `false`.
      */
-    public async respond(data: ResponseData, ephemeral: boolean = false): Promise<void> {
+    public async respond(data: string | ResponseData, ephemeral: boolean = false): Promise<void> {
         const endpointUrl = Endpoint.latest.interaction(this.id, this.token).callback.url
         const responseData: APIInteractionResponse = {
             type: InteractionResponseType.ChannelMessageWithSource,
-            data,
+            data: typeof data === "string" ? {
+                content: data, 
+                flags: ephemeral ? MessageFlags.Ephemeral : undefined,
+            } : {
+                ...data,
+                flags: ephemeral ? MessageFlags.Ephemeral : undefined,
+            },
         }
 
         // Respond to the interaction
@@ -275,8 +285,8 @@ export class AutocompleteInteraction extends Interaction {
 
     // * Initializer
 
-    public constructor(raw: APIApplicationCommandAutocompleteInteraction) {
-        super(raw)
+    public constructor(raw: APIApplicationCommandAutocompleteInteraction, env: any) {
+        super(raw, env)
         this.data = new ChatInputCommandInteractionData(raw.data)
     }
 
@@ -321,8 +331,8 @@ export class CommandInteraction extends ModalableInteraction {
 
     // * Initializer
 
-    public constructor(raw: APIApplicationCommandInteraction) {
-        super(raw)
+    public constructor(raw: APIApplicationCommandInteraction, env: any) {
+        super(raw, env)
         this.data = CommandInteractionData.init(raw.data)
     }
 }
@@ -346,8 +356,8 @@ export class ComponentInteraction extends ModalableInteraction {
 
     // * Initializer
 
-    public constructor(raw: APIMessageComponentInteraction) {
-        super(raw)
+    public constructor(raw: APIMessageComponentInteraction, env: any) {
+        super(raw, env)
 
         this.message = raw.message
         this.data = ComponentInteractionData.init(raw.data)
@@ -400,8 +410,8 @@ export class ModalSubmissionInteraction extends RespondableInteraction {
 
     // * Initializer
 
-    public constructor(raw: APIModalSubmitInteraction) {
-        super(raw)
+    public constructor(raw: APIModalSubmitInteraction, env: any) {
+        super(raw, env)
         this.data = new ModalSubmissionData(raw.data)
     }
 }
@@ -421,7 +431,7 @@ export class PingInteraction extends Interaction {
 
     // * Initializer
 
-    public constructor(raw: APIInteraction) {
-        super(raw)
+    public constructor(raw: APIInteraction, env: any) {
+        super(raw, env)
     }
 }

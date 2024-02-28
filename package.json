@@ -9,14 +9,14 @@
   },
   "devDependencies": {
     "bun-types": "latest",
-    "discord-api-types": "^0.37.51",
+    "discord-api-types": "latest",
     "prettier": "^3.0.0"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "hono": "^3.3.4",
+    "hono": "^4.0.8",
     "tweetnacl": "^1.0.3"
   }
 }

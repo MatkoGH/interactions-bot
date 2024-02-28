@@ -45,23 +45,24 @@ export default class CommandManager {
 
     /**
      * Push all registered commands to Discord.
+     * @param applicationId The identifier of the application you wish to push commands to.
+     * @param applicationSecret The secret (token) of the application you wish to push commands to.
      */
-    public async push() {
-        const endpointUrl = Client.shared.endpoint.commands.url
+    public async push(applicationId: string, applicationSecret: string) {
+        const endpointUrl = Client.shared.endpoint(applicationId).commands.url
         
         // Publish commands to Discord
         const response = await fetch(endpointUrl, {
             method: "PUT",
-            headers: Client.shared.requestHeaders,
+            headers: Client.shared.requestHeaders(applicationSecret),
             body: JSON.stringify(this.rawCommands),
         })
 
         if (response.status === 200) {
             Logger.shared.log("Successfully pushed commands to Discord.")
         } else {
-            Logger.shared.error({
+            Logger.shared.error("Failed to push commands to Discord.", {
                 code: StatusCode.Conflict,
-                content: "Failed to push commands to Discord.",
             })
         }
     }

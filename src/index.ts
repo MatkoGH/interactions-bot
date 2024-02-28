@@ -4,33 +4,26 @@ import { StatusCode } from "./model/static/StatusCode"
 import CommandManager from "./model/manager/CommandManager"
 import InteractionManager from "./model/manager/InteractionManager"
 
-import Environment from "./model/Environment"
 import Logger from "./model/Logger"
-
-import { TestCommand, TestCommandHandler } from "./configuration/command/TestCommand"
 
 // # Registry
 
+import { ExampleCommand, ExampleCommandHandler } from "./configuration/command/ExampleCommand"
+
 // Register commands
 CommandManager.shared.register(
-    TestCommand,
+    ExampleCommand,
 )
 
 // Register handlers
 InteractionManager.shared.register(
-    new TestCommandHandler(),
+    new ExampleCommandHandler(),
 )
-
-// # Push Commands
-
-if (Environment.shared.shouldPushCommands) {
-    await CommandManager.shared.push()
-}
 
 // # Server
 
 /** The relative URL path to the interactions handler. */
-const PATH: string = "/bun-test"
+const PATH: string = "/interactions"
 
 /** The port to listen on. */
 const PORT: number = 3286

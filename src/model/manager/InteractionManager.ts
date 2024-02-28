@@ -3,12 +3,12 @@ import { APIInteraction } from "discord-api-types/v10"
 import { Context, Next } from "hono"
 import nacl from "tweetnacl"
 
-import Client from "../client/Client"
 import Interaction from "../interaction/Interaction"
 import Logger, { StatusCode } from "../Logger"
 
 import { AnyInteractionHandler } from "../interaction/InteractionHandler"
-import { streamToString } from "../../util/streamToString"
+
+import { concatUint8Arrays, valueToUint8Array } from "../../util/Uint18Array"
 
 // # Interaction Manager
 
@@ -69,7 +69,7 @@ export default class InteractionManager {
      */
     public async handle(context: Context): Promise<Response> {
         const raw = context.get("parsed_body") as APIInteraction
-        const interaction = Interaction.init(raw)
+        const interaction = Interaction.init(raw, context.env)
 
         // Acknowledge a ping interaction
         if (interaction.isPing()) {
@@ -85,8 +85,7 @@ export default class InteractionManager {
             // Respond with [200] OK
             return new Response("Interaction received.", { status: StatusCode.OK })
         } catch (error) {
-            Logger.shared.error({
-                content: String(error),
+            Logger.shared.error(String(error), {
                 code: StatusCode.BadRequest,
             })
 
@@ -100,9 +99,11 @@ export default class InteractionManager {
      * @param context The context of the request provided by Hono.
      */
     public async verificationMiddleware(context: Context, next: Next) {
-        const publicKey = Client.shared.publicKey
+        const publicKey = context.env.APPLICATION_PUBLIC_KEY
 
-        if (context.req.body === null) {
+        const rawBody = context.req.raw.body
+
+        if (rawBody === null) {
             return new Response("Invalid request signature.", { status: StatusCode.NotImplemented })
         }
 
@@ -110,13 +111,18 @@ export default class InteractionManager {
         const signature = context.req.header("X-Signature-Ed25519") as string
         const timestamp = context.req.header("X-Signature-Timestamp") as string
 
-        const body = await streamToString(context.req.body)
+        const body = await context.req.text()
+
+        const timestampData = valueToUint8Array(timestamp)
+        const bodyData = valueToUint8Array(body)
+        const message = concatUint8Arrays(timestampData, bodyData)
+
+        const signatureData = valueToUint8Array(signature, "hex")
+        const publicKeyData = valueToUint8Array(publicKey, "hex")
 
         // Verify the request signature
         const isVerified = nacl.sign.detached.verify(
-            Buffer.from(timestamp + body),
-            Buffer.from(signature, "hex"),
-            Buffer.from(publicKey, "hex"),
+            message, signatureData, publicKeyData
         )
 
         // If the signature is invalid, return a 401 response
