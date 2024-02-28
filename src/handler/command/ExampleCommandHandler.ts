@@ -12,6 +12,6 @@ export default class ExampleCommandHandler extends CommandInteractionHandler {
     }
 
     public async handle(interaction: ChatInputCommandInteraction) {
-        await interaction.respond('Success!', true)
+        await interaction.respond(interaction.data.subcommandPath ?? "no subcommand", true)
     }
 }
