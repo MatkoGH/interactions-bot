@@ -1,6 +1,6 @@
 import { ExampleCommand } from "../../configuration/command/ExampleCommand"
 
-import { CommandInteraction } from "../../model/interaction/Interaction"
+import { ChatInputCommandInteraction } from "../../model/interaction/Interaction"
 import { CommandInteractionHandler } from "../../model/interaction/InteractionHandler"
 
 // # Test Command Handler
@@ -11,9 +11,7 @@ export default class ExampleCommandHandler extends CommandInteractionHandler {
         super(ExampleCommand)
     }
 
-    public async handle(interaction: CommandInteraction) {
-        if (interaction.data.isCommand()) {
-            await interaction.respond(interaction.data.subcommandPath ?? "unknown")
-        }
+    public async handle(interaction: ChatInputCommandInteraction) {
+        await interaction.respond('Success!', true)
     }
 }
