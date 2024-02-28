@@ -23,6 +23,7 @@ import {
     ComponentInteractionData,
     ChatInputCommandInteractionData,
     ModalSubmissionData,
+    ContextMenuCommandInteractionData,
 } from "./InteractionData"
 
 import Client from "../client/Client"
@@ -134,7 +135,7 @@ export default class Interaction {
     }
 
     /** Whether the interaction was invoked by a command. */
-    public isCommand(): this is CommandInteraction {
+    public isCommand(): this is CommandInteraction<CommandInteractionData> {
         return this.type === InteractionType.ApplicationCommand
     }
 
@@ -315,10 +316,10 @@ export class AutocompleteInteraction extends Interaction {
 
 // # Command
 
-export class CommandInteraction extends ModalableInteraction {
+export class CommandInteraction<Data extends CommandInteractionData> extends ModalableInteraction {
     
     /** The data provided by the interaction. */
-    public readonly data: CommandInteractionData
+    public readonly data: Data
 
     // * Computed
 
@@ -336,9 +337,13 @@ export class CommandInteraction extends ModalableInteraction {
 
     public constructor(raw: APIApplicationCommandInteraction, env: any) {
         super(raw, env)
-        this.data = CommandInteractionData.init(raw.data)
+        this.data = CommandInteractionData.init(raw.data) as Data
     }
 }
+
+export type ChatInputCommandInteraction = CommandInteraction<ChatInputCommandInteractionData>
+
+export type ContextMenuCommandInteraction = CommandInteraction<ContextMenuCommandInteractionData>
 
 // # Message Component
 

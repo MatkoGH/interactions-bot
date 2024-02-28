@@ -1,6 +1,6 @@
 {
-  "name": "interactions-bot",
-  "description": "A Discord bot base framework that supports interactions.",
+  "name": "the-diiinosawr",
+  "description": "A Discord bot made to manage the diiinosawr Minecraft and Discord servers.",
   "license": "MIT",
   "module": "src/index.ts",
   "type": "module",
