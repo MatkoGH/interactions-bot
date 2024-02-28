@@ -4,6 +4,7 @@ import { StatusCode } from "./model/static/StatusCode"
 import CommandManager from "./model/manager/CommandManager"
 import InteractionManager from "./model/manager/InteractionManager"
 
+import Environment from "./model/Environment"
 import Logger from "./model/Logger"
 
 // # Registry
@@ -19,6 +20,13 @@ CommandManager.shared.register(
 InteractionManager.shared.register(
     new ExampleCommandHandler(),
 )
+
+// # Push Commands
+
+if (Environment.shared.shouldPushCommands) {
+    const { id, secret } = Environment.shared.application
+    await CommandManager.shared.push(id, secret)
+}
 
 // # Server
 

@@ -69,7 +69,7 @@ export default class InteractionManager {
      */
     public async handle(context: Context): Promise<Response> {
         const raw = context.get("parsed_body") as APIInteraction
-        const interaction = Interaction.init(raw, context.env)
+        const interaction = Interaction.init(raw)
 
         // Acknowledge a ping interaction
         if (interaction.isPing()) {
@@ -99,7 +99,7 @@ export default class InteractionManager {
      * @param context The context of the request provided by Hono.
      */
     public async verificationMiddleware(context: Context, next: Next) {
-        const publicKey = context.env.APPLICATION_PUBLIC_KEY
+        const publicKey = process.env.APPLICATION_PUBLIC_KEY as string
 
         const rawBody = context.req.raw.body
 

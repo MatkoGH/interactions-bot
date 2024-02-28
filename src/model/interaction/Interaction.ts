@@ -30,6 +30,7 @@ import Endpoint from "../static/Endpoint"
 import Logger, { StatusCode } from "../Logger"
 
 import { Choice } from "../command/CommandOption"
+import Environment from "../Environment"
 
 // # Interaction
 
@@ -69,7 +70,7 @@ export default class Interaction {
     private readonly version: number
 
     /** The environment variables. */
-    protected readonly env: any
+    // protected readonly env: any
 
     // * Computed
 
@@ -84,7 +85,7 @@ export default class Interaction {
      * Create a new interaction instance.
      * @param raw The raw interaction provided by the API.
      */
-    public constructor(raw: APIInteraction, env: any) {
+    public constructor(raw: APIInteraction, env?: any) {
         this.id = raw.id
         this.token = raw.token
         this.type = raw.type
@@ -100,14 +101,14 @@ export default class Interaction {
 
         this.version = raw.version
 
-        this.env = env
+        // this.env = env
     }
 
     /**
      * Create a new interaction instance and immediately convert it to its respective type
      * @param raw The raw interaction provided by the API.
      */
-    public static init(raw: APIInteraction, env: any): Interaction {
+    public static init(raw: APIInteraction, env?: any): Interaction {
         switch (raw.type) {
             case InteractionType.ApplicationCommandAutocomplete:
                 return new AutocompleteInteraction(raw, env)
@@ -160,9 +161,11 @@ export default class Interaction {
      * @param responseData The data to respond to the interaction with.
      */
     protected async sendTo(endpointUrl: URL, responseData: APIInteractionResponse) {
+        const { secret } = Environment.shared.application
+
         const response = await fetch(endpointUrl, {
             method: "POST",
-            headers: Client.shared.requestHeaders(this.env.APPLICATION_SECRET),
+            headers: Client.shared.requestHeaders(secret),
             body: JSON.stringify(responseData),
         })
 
